@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import it.polito.tdp.porto.model.Author;
 import it.polito.tdp.porto.model.Model;
+import it.polito.tdp.porto.model.PaperAndAuthors;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -25,7 +26,7 @@ public class PortoController {
     private ComboBox<Author> boxPrimo;
 
     @FXML
-    private ComboBox<?> boxSecondo;
+    private ComboBox<Author> boxSecondo;
 
     @FXML
     private TextArea txtResult;
@@ -51,10 +52,38 @@ public class PortoController {
     	for(Author ca : coAuthors)
     		this.txtResult.appendText(ca + "\n");
     }
+    
+    @FXML
+	void populateBoxSecondo(ActionEvent event) {
+    	this.boxSecondo.getItems().clear();
+    	Author a = this.boxPrimo.getSelectionModel().getSelectedItem();
+    	List<Author> authorsWithoutNeighbors = model.getAuthorsWithoutNeighbors(a);
+    	this.boxSecondo.getItems().addAll(authorsWithoutNeighbors);
+	}
 
     @FXML
     void handleSequenza(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	
+    	if(this.boxPrimo.getSelectionModel().isEmpty()) {
+    		this.txtResult.appendText("Errore: selezionare il primo autore!");
+    		return;
+    	}
+    	if(this.boxSecondo.getSelectionModel().isEmpty()) {
+    		this.txtResult.appendText("Errore: selezionare il secondo autore!");
+    		return;
+    	}
+    	
+    	Author a1 = this.boxPrimo.getSelectionModel().getSelectedItem();
+    	Author a2 = this.boxSecondo.getSelectionModel().getSelectedItem();
+    	List<PaperAndAuthors> sequence = model.findSequence(a1, a2);
+    	if(sequence == null) {
+    		this.txtResult.appendText("Sequenza tra " + a1 + " e " + a2 + " non trovata.");
+    		return;
+    	}
+		this.txtResult.appendText("Sequenza tra " + a1 + " e " + a2 + ":\n");
+		for(PaperAndAuthors paa : sequence)
+    		this.txtResult.appendText(paa + "\n");
     }
 
     @FXML
@@ -68,15 +97,15 @@ public class PortoController {
 	public void setModel(Model model) {
 		this.model = model;
 		createGraph();
-		populateComboBox(this.boxPrimo);
+		populateBoxPrimo();
 	}
 
 	private void createGraph() {
 		this.model.createGraph();
 	}
 	
-	private void populateComboBox(ComboBox<Author> boxPrimo) {
-		boxPrimo.getItems().addAll(model.getAuthors());
+	private void populateBoxPrimo() {
+		this.boxPrimo.getItems().addAll(model.getAuthors());
 	}
 	
 }

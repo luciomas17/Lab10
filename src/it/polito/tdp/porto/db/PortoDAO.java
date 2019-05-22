@@ -87,6 +87,7 @@ public class PortoDAO {
 				authors.put(rs.getInt("id"), a);
 			}
 
+			conn.close();
 			return authors;
 
 		} catch (SQLException e) {
@@ -115,7 +116,37 @@ public class PortoDAO {
 				coAuthors.add(new CoAuthor(a1, a2));
 			}
 
+			conn.close();
 			return coAuthors;
+
+		} catch (SQLException e) {
+			 e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+	}
+
+	public Paper getPaperFromAuthors(Author a1, Author a2) {
+		
+		final String sql = "SELECT p.eprintid, title, issn, publication, type, types " + 
+				"FROM creator c, paper p " + 
+				"WHERE (c.authorid = ? OR c.authorid = ?) AND c.eprintid = p.eprintid " + 
+				"GROUP BY c.authorid";
+		Paper paper = null;
+
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, a1.getId());
+			st.setInt(2, a2.getId());
+
+			ResultSet rs = st.executeQuery();
+
+			if(rs.next())
+				paper = new Paper(rs.getInt("eprintid"), rs.getString("title"), rs.getString("issn"), 
+						rs.getString("publication"), rs.getString("type"), rs.getString("types"));
+
+			conn.close();
+			return paper;
 
 		} catch (SQLException e) {
 			 e.printStackTrace();
