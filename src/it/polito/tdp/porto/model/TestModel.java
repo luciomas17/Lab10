@@ -1,11 +1,17 @@
 package it.polito.tdp.porto.model;
 
+import java.util.List;
+
 public class TestModel {
 
 	public static void main(String[] args) {
 		
 		Model model = new Model();
-		System.out.println("TODO: write a Model class and test it!");
+
+		model.createGraph();
+		
+		List<Author> neighbors = model.getNeighbors(new Author(85, "Belforte", "Gustavo"));
+		System.out.println(neighbors);
 	}
 
 }
